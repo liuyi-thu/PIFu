@@ -5,7 +5,7 @@ import math
 from scipy.special import sph_harm
 import argparse
 from tqdm import tqdm
-
+# 暂时不改，因为用不到texture
 def factratio(N, D):
     if N >= D:
         prod = 1.0
@@ -85,10 +85,11 @@ def getSHCoeffs(order, phi, theta):
     return np.stack(shs, 1)
 
 def computePRT(mesh_path, n, order):
-    mesh = trimesh.load(mesh_path, process=False)
-    vectors_orig, phi, theta = sampleSphericalDirections(n)
-    SH_orig = getSHCoeffs(order, phi, theta)
-
+    # mesh = trimesh.load(mesh_path, process=False)
+    mesh = trimesh.load(mesh_path, process=False, force='mesh') # 可能带来问题
+    vectors, phi, theta = sampleSphericalDirections(n)
+    vectors2 = vectors.copy()
+    SH = getSHCoeffs(order, phi, theta)
     w = 4.0 * math.pi / (n*n)
 
     origins = mesh.vertices
@@ -99,8 +100,8 @@ def computePRT(mesh_path, n, order):
     normals = np.repeat(normals[:,None], n, axis=1).reshape(-1,3)
     PRT_all = None
     for i in tqdm(range(n)):
-        SH = np.repeat(SH_orig[None,(i*n):((i+1)*n)], n_v, axis=0).reshape(-1,SH_orig.shape[1])
-        vectors = np.repeat(vectors_orig[None,(i*n):((i+1)*n)], n_v, axis=0).reshape(-1,3)
+        SH = np.repeat(SH[None,(i*n):((i+1)*n)], n_v, axis=0).reshape(-1,SH.shape[1])
+        vectors = np.repeat(vectors[None,(i*n):((i+1)*n)], n_v, axis=0).reshape(-1,3)
 
         dots = (vectors * normals).sum(1)
         front = (dots > 0.0)
@@ -122,10 +123,10 @@ def computePRT(mesh_path, n, order):
     # when loading PRT in other program, use the triangle list from trimesh.
     return PRT, mesh.faces
 
-def testPRT(dir_path, n=40):
+def testPRT(dir_path, n=5):
     if dir_path[-1] == '/':
         dir_path = dir_path[:-1]
-    sub_name = dir_path.split('/')[-1][:-4]
+    sub_name = dir_path.split('/')[-1]
     obj_path = os.path.join(dir_path, sub_name + '_100k.obj')
     os.makedirs(os.path.join(dir_path, 'bounce'), exist_ok=True)
 

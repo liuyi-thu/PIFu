@@ -18,7 +18,7 @@ def load_trimesh(root_dir):
     meshs = {}
     for i, f in enumerate(folders):
         sub_name = f
-        meshs[sub_name] = trimesh.load(os.path.join(root_dir, f, '%s_100k.obj' % sub_name))
+        meshs[sub_name] = trimesh.load(os.path.join(root_dir, f, '%s.obj' % sub_name))
 
     return meshs
 
@@ -67,9 +67,10 @@ class TrainDataset(Dataset):
         self.UV_POS = os.path.join(self.root, 'UV_POS')
         self.OBJ = os.path.join(self.root, 'GEO', 'OBJ')
 
-        self.B_MIN = np.array([-128, -28, -128])
-        self.B_MAX = np.array([128, 228, 128])
-
+        # self.B_MIN = np.array([-128, -28, -128])
+        # self.B_MAX = np.array([128, 228, 128])
+        self.B_MIN = np.array([-1, -1, -1])
+        self.B_MAX = np.array([1, 5, 1])
         self.is_train = (phase == 'train')
         self.load_size = self.opt.loadSize
 
@@ -236,7 +237,10 @@ class TrainDataset(Dataset):
             render_list.append(render)
             calib_list.append(calib)
             extrinsic_list.append(extrinsic)
-
+        render_list2=torch.stack(render_list, dim=0)
+        boolvar=torch.all(render_list2==0)
+        render_list3=render_list2.numpy()
+        # print(boolvar)
         return {
             'img': torch.stack(render_list, dim=0),
             'calib': torch.stack(calib_list, dim=0),
@@ -353,7 +357,7 @@ class TrainDataset(Dataset):
         subject = self.subjects[sid]
         res = {
             'name': subject,
-            'mesh_path': os.path.join(self.OBJ, subject + '.obj'),
+            'mesh_path': os.path.join(self.OBJ, subject, subject + '.obj'),
             'sid': sid,
             'yid': yid,
             'pid': pid,

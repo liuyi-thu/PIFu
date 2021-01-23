@@ -1,6 +1,6 @@
 import sys
 import os
-
+import random
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from lib.data.EvalDataset import EvalDataset
 from lib.options import BaseOptions
 from lib.mesh_util import *
 from lib.sample_util import *
@@ -107,17 +108,40 @@ class Evaluator:
 
 if __name__ == '__main__':
     evaluator = Evaluator(opt)
-
-    test_images = glob.glob(os.path.join(opt.test_folder_path, '*'))
-    test_images = [f for f in test_images if ('png' in f or 'jpg' in f) and (not 'mask' in f)]
-    test_masks = [f[:-4]+'_mask.png' for f in test_images]
-
-    print("num; ", len(test_masks))
-
-    for image_path, mask_path in tqdm.tqdm(zip(test_images, test_masks)):
-        try:
-            print(image_path, mask_path)
-            data = evaluator.load_image(image_path, mask_path)
-            evaluator.eval(data, True)
-        except Exception as e:
-           print("error:", e.args)
+    eval_dataset = EvalDataset(opt)
+    eval_data_loader = DataLoader(eval_dataset,
+                                   batch_size=1, shuffle=False,
+                                   num_workers=opt.num_threads, pin_memory=opt.pin_memory)
+    # for eval_idx, eval_data in enumerate(eval_data_loader):
+    #     B_MIN = np.array([-1, -1, -1])
+    #     B_MAX = np.array([1, 1, 1])
+    #     tmp = {
+    #         'b_min': B_MIN,
+    #         'b_max': B_MAX,
+    #     }
+    #     eval_data.update(tmp)
+    #     # print(eval_data.name)
+    # evaluator.eval(eval_data,True)
+    eval_data=random.choice(eval_dataset)
+    B_MIN = np.array([-128, -28, -128])
+    B_MAX = np.array([128, 228, 128])
+    tmp = {
+        'b_min': B_MIN,
+        'b_max': B_MAX,
+    }
+    eval_data.update(tmp)
+    # print(eval_data.name)
+    evaluator.eval(eval_data,True)
+    # test_images = glob.glob(os.path.join(opt.test_folder_path, '*'))
+    # test_images = [f for f in test_images if ('png' in f or 'jpg' in f) and (not 'mask' in f)]
+    # test_masks = [f[:-4]+'_mask.png' for f in test_images]
+    #
+    # print("num; ", len(test_masks))
+    #
+    # for image_path, mask_path in tqdm.tqdm(zip(test_images, test_masks)):
+    #     try:
+    #         print(image_path, mask_path)
+    #         data = evaluator.load_image(image_path, mask_path)
+    #         evaluator.eval(data, True)
+    #     except Exception as e:
+    #        print("error:", e.args)

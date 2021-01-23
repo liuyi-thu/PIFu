@@ -94,7 +94,17 @@ def train(opt):
             image_tensor = train_data['img'].to(device=cuda)
             calib_tensor = train_data['calib'].to(device=cuda)
             sample_tensor = train_data['samples'].to(device=cuda)
-
+            # # for debugging only
+            # save_img_path = 'for_test.png'
+            # save_img_list = []
+            # for v in range(image_tensor
+            # .shape[0]):
+            #     save_img = (np.transpose(image_tensor[v].detach().cpu().numpy(), (1, 2, 0)) * 0.5 + 0.5)[:, :,
+            #                ::-1] * 255.0
+            #     save_img_list.append(save_img)
+            # save_img = np.concatenate(save_img_list, axis=1)
+            # Image.fromarray(np.uint8(save_img[:, :, ::-1])).save(save_img_path)
+            bbbb=image_tensor.cpu().numpy()
             image_tensor, calib_tensor = reshape_multiview_tensors(image_tensor, calib_tensor)
 
             if opt.num_views > 1:
@@ -103,7 +113,7 @@ def train(opt):
             label_tensor = train_data['labels'].to(device=cuda)
 
             res, error = netG.forward(image_tensor, sample_tensor, calib_tensor, labels=label_tensor)
-
+            aaaa=netG.parameters()
             optimizerG.zero_grad()
             error.backward()
             optimizerG.step()

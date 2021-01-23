@@ -9,7 +9,7 @@ import torch
 from PIL.ImageFilter import GaussianBlur
 import trimesh
 import cv2
-
+import numpy
 
 class EvalDataset(Dataset):
     @staticmethod
@@ -85,12 +85,14 @@ class EvalDataset(Dataset):
         extrinsic_list = []
 
         for vid in view_ids:
-            param_path = os.path.join(self.PARAM, subject, '%d_%02d.npy' % (vid, pitch))
-            render_path = os.path.join(self.RENDER, subject, '%d_%02d.jpg' % (vid, pitch))
-            mask_path = os.path.join(self.MASK, subject, '%d_%02d.png' % (vid, pitch))
-
+            # param_path = os.path.join(self.PARAM, subject, '%d_%02d.npy' % (vid, pitch))
+            # render_path = os.path.join(self.RENDER, subject, '%d_%02d.jpg' % (vid, pitch))
+            # mask_path = os.path.join(self.MASK, subject, '%d_%02d.png' % (vid, pitch))
+            param_path = os.path.join(self.PARAM, subject, '%d_%d_%02d.npy' % (vid, pitch, 0))
+            render_path = os.path.join(self.RENDER, subject, '%d_%d_%02d.jpg' % (vid, pitch, 0))
+            mask_path = os.path.join(self.MASK, subject, '%d_%d_%02d.png' % (vid, pitch, 0))
             # loading calibration data
-            param = np.load(param_path)
+            param = np.load(param_path, allow_pickle=True)
             # pixel unit / world unit
             ortho_ratio = param.item().get('ortho_ratio')
             # world unit / model unit
@@ -150,7 +152,7 @@ class EvalDataset(Dataset):
             subject = self.subjects[sid]
             res = {
                 'name': subject,
-                'mesh_path': os.path.join(self.OBJ, subject + '.obj'),
+                'mesh_path': os.path.join(self.OBJ, subject, subject + '.obj'),
                 'sid': sid,
                 'vid': vid,
             }

@@ -45,7 +45,7 @@ class HGPIFuNet(BasePIFuNet):
 
         self.normalizer = DepthNormalizer(opt)
 
-        # This is a list of [B x Feat_i x H x W] features
+        # This is a list of [B x Feat_i x H x W] features, What's Feat_i?
         self.im_feat_list = []
         self.tmpx = None
         self.normx = None
@@ -73,7 +73,8 @@ class HGPIFuNet(BasePIFuNet):
         query() function may behave differently during training/testing.
         :param points: [B, 3, N] world space coordinates of points
         :param calibs: [B, 3, 4] calibration matrices for each image
-        :param transforms: Optional [B, 2, 3] image space coordinate transforms
+        :param transf
+        orms: Optional [B, 2, 3] image space coordinate transforms
         :param labels: Optional [B, Res, N] gt labeling
         :return: [B, Res, N] predictions for each point
         '''
@@ -103,7 +104,10 @@ class HGPIFuNet(BasePIFuNet):
             point_local_feat = torch.cat(point_local_feat_list, 1)
 
             # out of image plane is always set to 0
-            pred = in_img[:,None].float() * self.surface_classifier(point_local_feat)
+            aaa=in_img[:,None].float()
+            bbb=self.surface_classifier(point_local_feat)
+            pred=aaa*bbb
+            #pred = in_img[:,None].float() * self.surface_classifier(point_local_feat)
             self.intermediate_preds_list.append(pred)
 
         self.preds = self.intermediate_preds_list[-1]

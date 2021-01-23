@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from .sdf import create_grid, eval_grid_octree, eval_grid
 from skimage import measure
-
+import traceback
 
 def reconstruction(net, cuda, calib_tensor,
                    resolution, b_min, b_max,
@@ -49,6 +49,7 @@ def reconstruction(net, cuda, calib_tensor,
         return verts, faces, normals, values
     except:
         print('error cannot marching cubes')
+        print(traceback.format_exc())
         return -1
 
 
